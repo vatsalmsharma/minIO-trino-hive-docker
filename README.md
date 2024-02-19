@@ -12,6 +12,15 @@ trino + hive + minio with postgres in docker compose
 In this article, the focus is to build a modern data lake using only open source technologies. I will walk-through a step-by-step process to demonstrate how we can leverage an S3-Compatible Object Storage (MinIO) and a Distributed SQL query engine (Trino) to achieve this.
 "
 
+## Getting started with the Hive Connector on Trino #
+To drive this point home, I created a tutorial that showcases using Trino and looking at the metadata it produces. In the following scenario, the docker environment contains four docker containers:
+
+* trino - the runtime in this scenario that replaces Hive.
+* minio - the storage is an open-source cloud object storage.
+* hive-metastore - the metastore service instance.
+* mariadb - the database that the metastore uses to store the metadata.
+
+You can play around with the system and optionally view the configurations. The scenario asks you to run a query to populate data in MinIO and then see the resulting metadata populated in MariaDB by the HMS. The next step asks you to run queries over the mariadb database which holds the generated metadata from the metastore.
 # Trino-Hive-Postgres-Minio Exercise
 
 This is a personal exercise for me to understand Trino and its architecture, especially with 
