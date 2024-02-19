@@ -3,7 +3,11 @@ trino + hive + minio with postgres in docker compose
 
 
 
+## DOCS
 
+- How to Build a Modern Data Lake with MinIO:
+  * https://medium.com/codex/how-to-build-a-modern-data-lake-with-minio-db0455eec053
+  
 
 
 # Trino-Hive-Postgres-Minio Exercise
