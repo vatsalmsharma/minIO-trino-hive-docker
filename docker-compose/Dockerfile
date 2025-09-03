@@ -1,4 +1,7 @@
-FROM openjdk:8-jre-slim-buster
+# FROM openjdk:8-jre-slim-buster
+# slim-buster is based on Debian 10 (buster), which is end-of-life and its repos have been moved/disabled. Causing apt-get update to fail.
+# Using 'Bullseye'
+FROM openjdk:8-jre-slim-bullseye
 
 WORKDIR /opt
 

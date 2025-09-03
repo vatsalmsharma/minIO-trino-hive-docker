@@ -1,4 +1,4 @@
-version: '3.7'
+# version: '3.7'
 services:
   trino-coordinator:
     image: 'trinodb/trino:latest'
@@ -55,7 +55,7 @@ services:
     command: server --console-address ":9001" /data
     networks:
       - trino-network
-
+      
 volumes:
   minio-data:
     driver: local

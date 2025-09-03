@@ -56,7 +56,8 @@ Step 3 - Create Bucket in MinIO
 
 Step 4 - Into the runnung trino container
 ```bash
-docker container exec -it docker-compose_trino-coordinator_1 trino
+# docker container exec -it docker-compose_trino-coordinator_1 trino
+docker container exec -it docker-compose-trino-coordinator-1 trino
 ```
 Step 5 -  Create schema and table and play around with trino, you can see the trino dashboard from localhost:8080.
 ```sql
@@ -75,7 +76,8 @@ AS SELECT * FROM tpch.tiny.customer;
 ### (Optional: see the metadata store in Postgres)
 Step 6 - Into the running postgres container
 ```bash 
-docker exec -it "docker-compose_postgres_1" psql -U admin -d "hive_db"
+# docker exec -it "docker-compose_postgres_1" psql -U admin -d "hive_db"
+docker exec -it "docker-compose-postgres-1" psql -U admin -d "hive_db"
 ```
 Step 7 - Run SQL commands on postgresDB to see where the metadata is stored. 
 ```sql
