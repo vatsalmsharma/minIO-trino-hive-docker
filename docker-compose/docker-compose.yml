@@ -55,51 +55,7 @@ services:
     command: server --console-address ":9001" /data
     networks:
       - trino-network
-
-  # spark:
-  #   image: apache/spark-py:3.5.0
-  #   container_name: spark
-  #   hostname: spark
-  #   environment:
-  #     - SPARK_NO_DAEMONIZE=true
-  #   ports:
-  #     - "7077:7077"   # Spark master
-  #     - "8081:8081"   # Spark web UI
-  #   command: bin/spark-class org.apache.spark.deploy.master.Master --host spark
-  #   networks:
-  #     - trino-network
-  #   volumes:
-  #     - ./spark-apps:/opt/spark-apps
-  #     - ./spark-data:/opt/spark-data
-  #     - ./jars:/opt/spark/jars   # mount hadoop-aws + aws-sdk jars here
-
-  # spark-master:
-  #   image: bitnami/spark:3.5.0
-  #   hostname: spark-master
-  #   container_name: spark-master
-  #   environment:
-  #     - SPARK_MODE=master
-  #   ports:
-  #     - "7077:7077"
-  #     - "8081:8080"
-  #   networks:
-  #     - trino-network
-  #   volumes:
-  #     - ./jars:/opt/spark/jars
-
-  # spark-worker:
-  #   image: bitnami/spark:3.5.0
-  #   hostname: spark-worker
-  #   depends_on:
-  #     - spark-master
-  #   environment:
-  #     - SPARK_MODE=worker
-  #     - SPARK_MASTER_URL=spark://spark-master:7077
-  #   networks:
-  #     - trino-network
-  #   volumes:
-  #     - ./jars:/opt/spark/jars
-
+      
 volumes:
   minio-data:
     driver: local
