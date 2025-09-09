@@ -9,7 +9,8 @@ services:
       - ./etc:/etc/trino
       - ./conf:/etc/trino/conf
     networks:
-      - trino-network
+      # - trino-network
+      trino-network:
 
   postgres:
     image: 'postgres:11'
@@ -23,7 +24,8 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: hive_db
     networks:
-      - trino-network
+      # - trino-network
+      trino-network:
 
   hive-metastore:
     image: 'my-hive-metastore:latest'
@@ -38,7 +40,8 @@ services:
     depends_on:
       - postgres
     networks:
-      - trino-network
+      # - trino-network
+      trino-network:
 
   minio:
     image: 'minio/minio:latest'
@@ -54,7 +57,8 @@ services:
       MINIO_SECRET_KEY: minio123
     command: server --console-address ":9001" /data
     networks:
-      - trino-network
+      # - trino-network
+      trino-network:
       
 volumes:
   minio-data:
@@ -62,4 +66,4 @@ volumes:
 
 networks:
   trino-network:
-    driver: bridge
+    # driver: bridge
