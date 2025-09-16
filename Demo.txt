@@ -5,7 +5,8 @@ docker container exec -it docker-compose-trino-coordinator-1 trino
 docker exec -it "docker-compose-postgres-1" psql -U admin -d "hive_db"
 
 -- create bucket 'hive'
--- create directory 'datasets' and upload the file
+-- create directory 'datasets' 
+-- create 2 folders 'csv' and 'parquet' and upload the resp. files
 
 CREATE SCHEMA hive.hp
 WITH (location = 's3a://hive/');
@@ -18,21 +19,62 @@ CREATE TABLE hive.hp.nyc_taxi_zone_hive (
     service_zone VARCHAR
 )
 WITH (
-    external_location = 's3a://hive/datasets/',
+    external_location = 's3a://hive/datasets/csv',
     format = 'CSV',
     skip_header_line_count = 1
 );
+
+select count(*) from hive.hp.nyc_taxi_zone_hive ;
+
+CREATE TABLE hive.hp.taxi_hive (
+    VendorID              bigint,
+    tpep_pickup_datetime  timestamp,
+    tpep_dropoff_datetime timestamp,
+    passenger_count       double,
+    trip_distance         double,
+    RatecodeID            double,
+    store_and_fwd_flag    varchar,
+    PULocationID          bigint,
+    DOLocationID          bigint,
+    payment_type          bigint,
+    fare_amount           double,
+    extra                 double,
+    mta_tax               double,
+    tip_amount            double,
+    tolls_amount          double,
+    improvement_surcharge double,
+    total_amount          double,
+    congestion_surcharge  double,
+    airport_fee           double
+)
+WITH (
+    external_location = 's3a://hive/datasets/parquet',
+    format = 'PARQUET'
+);
+
+
+select count(*) from hive.hp.taxi_hive;
 
 select count(*) from hive.hp.nyc_taxi_zone_hive;
 
 select * from hive.hp.nyc_taxi_zone_hive limit 10;
 
+select 
+VendorID,
+tpep_pickup_datetime,
+tpep_dropoff_datetime,
+fare_amount
+from hive.hp.taxi_hive limit 10;
+
 -- create bucket 'iceberg'
--- create directory 'taxi_zone_lookup'
+-- create directory 'taxi_zone_lookup'and 'yellow_taxi'
 
 CREATE SCHEMA iceberg.ip
 WITH (location = 's3a://iceberg/');
 
+-- Consolidated 
+CREATE SCHEMA iceberg.ip
+WITH (location = 's3a://warehouse/');
 
 CREATE TABLE iceberg.ip.nyc_taxi_zone_ice (
     location_id VARCHAR,
@@ -54,6 +96,45 @@ select count(*) from iceberg.ip.nyc_taxi_zone_ice;
 select * from iceberg.ip.nyc_taxi_zone_ice limit 10;
 
 
+CREATE TABLE iceberg.ip.nyc_yellow_taxi_ice (
+        VendorID              bigint,
+    tpep_pickup_datetime  timestamp,
+    tpep_dropoff_datetime timestamp,
+    passenger_count       double,
+    trip_distance         double,
+    RatecodeID            double,
+    store_and_fwd_flag    varchar,
+    PULocationID          bigint,
+    DOLocationID          bigint,
+    payment_type          bigint,
+    fare_amount           double,
+    extra                 double,
+    mta_tax               double,
+    tip_amount            double,
+    tolls_amount          double,
+    improvement_surcharge double,
+    total_amount          double,
+    congestion_surcharge  double,
+    airport_fee           double
+)
+WITH (
+    location = 's3a://iceberg/yellow_taxi',  
+    format = 'PARQUET'
+);
+
+
+insert into iceberg.ip.nyc_yellow_taxi_ice
+select * from hive.hp.taxi_hive;
+
+select count(*) from iceberg.ip.nyc_yellow_taxi_ice;
+
+select VendorID,
+tpep_pickup_datetime,
+tpep_dropoff_datetime,
+fare_amount 
+from iceberg.ip.nyc_yellow_taxi_ice limit 10;
+
+
 show tables in iceberg.ip;
 
 show tables in hive.hp;
@@ -67,6 +148,7 @@ SELECT
  "CTLG_NAME"
 FROM "DBS";
 
+select * from "TBLS";
 
 docker compose down  
 

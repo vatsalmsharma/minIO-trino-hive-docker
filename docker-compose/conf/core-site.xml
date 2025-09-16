@@ -20,12 +20,14 @@
 
     <property>
         <name>fs.s3a.access.key</name>
-        <value>minio</value>
+        <!-- <value>minio</value> -->
+        <value>admin</value>
     </property>
 
     <property>
         <name>fs.s3a.secret.key</name>
-        <value>minio123</value>
+        <!-- <value>minio123</value> -->
+        <value>password</value>
     </property>
 
     <property>
