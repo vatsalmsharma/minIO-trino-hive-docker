@@ -25,6 +25,8 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: hive_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       # - trino-network
       trino-network:
@@ -77,7 +79,10 @@ services:
       - ./warehouse:/home/iceberg/warehouse
       - ./notebooks:/home/iceberg/notebooks/notebooks
       - ./data:/home/iceberg/data
+      - ./jars/postgresql-42.7.7.jar:/opt/spark/jars/postgresql-42.7.7.jar 
+      - ./libs:/home/iceberg/libs
     environment:
+      - PYTHONPATH=/home/iceberg
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
@@ -139,6 +144,7 @@ services:
 volumes:
   minio-data:
     driver: local
+  postgres_data: 
 
 networks:
   trino-network:

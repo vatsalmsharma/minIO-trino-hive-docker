@@ -1,0 +1,37 @@
+# LAYER 1 : Input/Source: 
+1) ADAT file = .csv file 
+2) Postgres for SSE and EDW 
+3) "Call Complain"  .dat file 
+4) Call Logs => txt files 
+5) parquet file 
+6) Postman : API calls 
+
+Flag : Alpha and Delta 
+
+
+# LAYER 2 : ETL Layer 
+    Load source system - RAW into BDH => Objective 
+    ETL bulk load, Delta and Streaming 
+
+# < Staging datalake >
+SOURE SYSTEM to BDH 
+        ETL layer loads data into BDH RAW Data => into structured ICEBERG format 
+        Multiple Tables for each source table 
+        Have separate schema in ICEBERG for each mnemonic/source ? Clarify 
+
+
+# < Distribution Data lake >
+BDH to BRONZE
+    Only PySprak Delta Load and Bulk load with Transformations and Tokenization 
+
+BRONZE to SILVER 
+    Pyspark ETL and De-tokenization 
+    Check if streaming is needed at each stage ? 
+
+SILVER to GOLD 
+
+# LAYER 3 : Output / Consumer 
+GOLD to BI/ML use-case
+
+
+# Recon 
