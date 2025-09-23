@@ -1,0 +1,104 @@
+{
+    "OCR": [
+      {
+        "Staging": {
+          "Database_Name": "ocr_staging_db",
+          "Source": {
+            "File": [
+              {
+                "Connector": "CSV",
+                "Location": "/home/iceberg/data/taxi_zone_lookup.csv",
+                "Target_Iceberg_Table": "taxi_zone_stg",
+                "Sttm_Identifier": "OCR_STG_TAXI_ZONE"
+              },
+              {
+                "Connector": "Parquet",
+                "Location": "/home/iceberg/data/yellow_tripdata_2025-01.parquet",
+                "Target_Iceberg_Table": "yellow_taxi_stg",
+                "Sttm_Identifier": "OCR_STG_Y_TAXI"
+              }
+            ],
+            "Database": [
+              {
+                "Connector": "Postgres",
+                "Host": "0.0.0.0",
+                "Port": "5432",
+                "DB": "spark_demo",
+                "User": "admin",
+                "Password": "admin",
+                "Source_table": "customers",
+                "Target_Iceberg_Table": "customers_stg",
+                "Sttm_Identifier": "OCR_STG_CUST"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "Bronze": {
+          "Database_Name": "ocr_bronze_db",
+          "Properties": [
+            {
+              "Source_Table": "taxi_zone_stg",
+              "Target_Table": "taxi_zone_bronze",
+              "Sttm_Identifier": "OCR_BRZ_CUST"
+            },
+            {
+              "Source_Table": "yellow_taxi_stg",
+              "Target_Table": "yellow_taxi_bronze",
+              "Sttm_Identifier": "OCR_BRZ_Y_TAXI"
+            },
+            {
+              "Source_Table": "customers_stg",
+              "Target_Table": "customers_bronze",
+              "Sttm_Identifier": "OCR_BRZ_CUST"
+            }
+          ]
+        }
+      },
+      {
+        "Silver": {
+          "Database_Name": "ocr_silver_db",
+          "Properties": [
+            {
+              "Source_Table": "taxi_zone_bronze",
+              "Target_Table": "taxi_zone_silver",
+              "Sttm_Identifier": "OCR_SLR_CUST"
+            },
+            {
+              "Source_Table": "yellow_taxi_bronze",
+              "Target_Table": "yellow_taxi_silver",
+              "Sttm_Identifier": "OCR_SLR_Y_TAXI"
+            },
+            {
+              "Source_Table": "customers_bronze",
+              "Target_Table": "customers_silver",
+              "Sttm_Identifier": "OCR_SLR_CUST"
+            }
+          ]
+        }
+      },
+      {
+        "Gold": {
+          "Database_Name": "ocr_gold_db",
+          "Properties": [
+            {
+              "Source_Table": "taxi_zone_silver",
+              "Target_Table": "taxi_zone_gold",
+              "Sttm_Identifier": "OCR_GLD_CUST"
+            },
+            {
+              "Source_Table": "yellow_taxi_silver",
+              "Target_Table": "yellow_taxi_gold",
+              "Sttm_Identifier": "OCR_GLD_Y_TAXI"
+            },
+            {
+              "Source_Table": "customers_silver",
+              "Target_Table": "customers_gold",
+              "Sttm_Identifier": "OCR_GLD_CUST"
+            }
+          ]
+        }
+      }
+    ]
+  }

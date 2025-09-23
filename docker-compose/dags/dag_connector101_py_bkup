@@ -1,0 +1,39 @@
+# connector101.py
+
+from airflow import DAG
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+# import pendulum
+from datetime import datetime
+
+with DAG(
+    dag_id="spark_submit_job",
+    # start_date=pendulum.datetime(2025,1,1, tz="UTC"),
+    start_date=datetime(2025, 9, 1),
+    schedule_interval=None,
+    catchup=False
+) as dag:
+
+    spark_task = SparkSubmitOperator(
+        task_id="run_spark_job",
+        # application="/opt/airflow/dags/run_spark_job.py",  # your script
+        application="/home/iceberg/notebooks/connector101.py",  # your script
+        conn_id="spark_default",
+        verbose=True
+    )
+
+# from airflow import DAG
+# from airflow.operators.python import PythonOperator
+# import pendulum
+# from notebooks.connector101 import main  # import your notebook logic
+
+# with DAG(
+#     dag_id="run_sconnector101",
+#     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+#     schedule_interval=None,
+#     catchup=False,
+# ) as dag:
+
+#     run_notebook_task = PythonOperator(
+#         task_id='run_connector101_task',
+#         python_callable=main
+#     )

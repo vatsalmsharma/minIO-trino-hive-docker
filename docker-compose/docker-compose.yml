@@ -1,6 +1,5 @@
 # version: '3.7' 
 services:
-# Commented for adding Spark
   trino-coordinator:
     image: 'trinodb/trino:latest'
     hostname: trino-coordinator
@@ -29,7 +28,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       # - trino-network
-      trino-network:
+      # trino-network:
+      - trino-network
+      - iceberg_net   # also share with spark & airflow
 
   hive-metastore:
     image: 'my-hive-metastore:latest'
@@ -47,24 +48,6 @@ services:
       # - trino-network
       trino-network:
 
-# Commented for adding Spark
-  # minio:
-  #   image: 'minio/minio:latest'
-  #   hostname: minio
-  #   container_name: minio
-  #   ports:
-  #     - '9000:9000'
-  #     - '9001:9001'
-  #   volumes:
-  #     - minio-data:/data
-  #   environment:
-  #     MINIO_ACCESS_KEY: minio
-  #     MINIO_SECRET_KEY: minio123
-  #   command: server --console-address ":9001" /data
-  #   networks:
-  #     # - trino-network
-  #     trino-network:
-
 # Adding Spark
   spark-iceberg:
     image: tabulario/spark-iceberg
@@ -81,6 +64,8 @@ services:
       - ./data:/home/iceberg/data
       - ./jars/postgresql-42.7.7.jar:/opt/spark/jars/postgresql-42.7.7.jar 
       - ./libs:/home/iceberg/libs
+      - ./mne_configs:/home/iceberg/mne_configs
+      - ./src:/home/iceberg/src
     environment:
       - PYTHONPATH=/home/iceberg
       - AWS_ACCESS_KEY_ID=admin
@@ -139,7 +124,95 @@ services:
       /usr/bin/mc policy set public minio/warehouse;
       tail -f /dev/null
       "
-##
+# Airflow 
+  airflow:
+    # image: apache/airflow:2.9.2
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    container_name: airflow
+    depends_on:
+      - postgres
+      - spark-iceberg
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      # Airflow metadata DB points to same postgres container (different DB name!)
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres:5432/airflow_db
+      - AIRFLOW__CORE__FERNET_KEY=your_fernet_key_here
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=UTC
+      - AIRFLOW__WEBSERVER__PORT=8090     # avoid Spark’s 8080 conflict
+      - PYTHONPATH=/home/airflow/libs:/home/iceberg
+      - AIRFLOW__CORE__FERNET_KEY=1J-OxNE5XgZilVAdFE7Lk1GYdKymHhJqa6rqaH0myWY=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=/FQcb906qV7xB02pRTTAZw==
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./libs:/home/airflow/libs       # your shared connectors
+      - ./notebooks:/home/iceberg/notebooks/
+      - ./libs:/home/iceberg/libs
+      - ./mne_configs:/home/iceberg/mne_configs
+      - ./src:/home/iceberg/src
+    ports:
+      - "8090:8090"   # Airflow UI
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+        exec airflow webserver --port 8090
+      "
+    networks:
+      - iceberg_net
+      - trino-network
+
+  airflow-webserver:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    container_name: airflow-webserver
+    depends_on:
+      - postgres
+    command: airflow scheduler
+    environment:
+      - AIRFLOW__CORE__FERNET_KEY=1J-OxNE5XgZilVAdFE7Lk1GYdKymHhJqa6rqaH0myWY=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=/FQcb906qV7xB02pRTTAZw==
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./libs:/home/airflow/libs
+      - ./notebooks:/home/iceberg/notebooks
+      - ./libs:/home/iceberg/libs
+      - ./mne_configs:/home/iceberg/mne_configs
+      - ./src:/home/iceberg/src
+    networks:
+      - iceberg_net
+      - trino-network
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.2
+    container_name: airflow-scheduler
+    depends_on:
+      - postgres
+    command: airflow scheduler
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres:5432/airflow_db
+      - AIRFLOW__CORE__FERNET_KEY=your_fernet_key_here
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__WEBSERVER__PORT=8090
+      - AIRFLOW__CORE__FERNET_KEY=1J-OxNE5XgZilVAdFE7Lk1GYdKymHhJqa6rqaH0myWY=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=/FQcb906qV7xB02pRTTAZw==
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./libs:/home/airflow/libs
+      - ./notebooks:/opt/airflow/dags/notebooks
+      - ./libs:/home/iceberg/libs
+      - ./mne_configs:/home/iceberg/mne_configs
+      - ./src:/home/iceberg/src
+    networks:
+      - iceberg_net
+      - trino-network
+# AF
 
 volumes:
   minio-data:
@@ -147,5 +220,9 @@ volumes:
   postgres_data: 
 
 networks:
+  # trino-network:
+  #   # driver: bridge
+  iceberg_net:
+    # external: true
   trino-network:
-    # driver: bridge
+    # external: true

@@ -1,0 +1,20 @@
+The official Airflow docker-compose.yaml is indeed huge because it’s meant to demo every component in Celery/worker mode. 
+For your use case (local dev, Spark integration), you don’t need all of them.
+
+You can run Airflow in “LocalExecutor” mode, which keeps things simple: just a webserver + scheduler + metadata DB in one container.
+
+-- Since added Papermill
+docker compose build airflow
+docker compose build airflow-webserver
+
+docker exec -it docker-compose-postgres-1 psql -U admin -d postgres
+CREATE DATABASE airflow_db;
+
+Generate the Fernet key directly inside the airflow container:
+    docker exec -it airflow bash
+    python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+🔹 Step 1: Initialize the Airflow DB
+You only need to run this once.
+    docker exec -it airflow bash
+    airflow db init

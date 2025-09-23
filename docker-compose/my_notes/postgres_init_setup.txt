@@ -1,0 +1,22 @@
+docker exec -it <postgres_container> psql -U admin -d postgres
+
+
+docker exec -it docker-compose-postgres-1 psql -U admin -d postgres
+
+# To show all database
+\l 
+
+CREATE DATABASE spark_demo;
+\c spark_demo;
+
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    age INT
+);
+
+insert into customers(name, email, age) values ('Vatsal', 'vatsal@gmail.com', 36);
+insert into customers(name, email, age) values ('Sriram', 'sriram@gmail.com', 38);
+insert into customers(name, email, age) values ('Tapan', 'tapan@gmail.com', 34);
+insert into customers(name, email, age) values ('Deepak', 'deepak@gmail.com', 36);
